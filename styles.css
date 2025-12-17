@@ -1,0 +1,292 @@
+/* ===== Ultra-Minimal Design ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #fff;
+    color: #000;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 80px 32px;
+}
+
+/* ===== Header ===== */
+.header {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.progress-counter {
+    font-size: 72px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 24px;
+}
+
+.current {
+    color: #000;
+}
+
+.divider {
+    color: #ccc;
+    font-weight: 300;
+    margin: 0 4px;
+}
+
+.goal {
+    color: #999;
+    font-weight: 300;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 3px;
+    background: #eee;
+    margin: 0 auto;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #000;
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
+/* ===== Heatmap ===== */
+.heatmap-section {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 60px;
+}
+
+.heatmap-days {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-top: 20px;
+}
+
+.heatmap-days span {
+    height: 12px;
+    font-size: 10px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.heatmap-scroll {
+    flex: 1;
+    overflow-x: auto;
+}
+
+.heatmap-months {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 6px;
+}
+
+.heatmap-months span {
+    font-size: 10px;
+    color: #999;
+    font-weight: 500;
+}
+
+.heatmap-grid {
+    display: flex;
+    gap: 3px;
+}
+
+.heatmap-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.heatmap-day {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: #eee;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.heatmap-day:hover {
+    transform: scale(1.5);
+}
+
+.heatmap-day.level-1 {
+    background: #ccc;
+}
+
+.heatmap-day.level-2 {
+    background: #999;
+}
+
+.heatmap-day.level-3 {
+    background: #666;
+}
+
+.heatmap-day.level-4 {
+    background: #000;
+}
+
+.tooltip {
+    position: fixed;
+    background: #000;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+}
+
+.tooltip.visible {
+    opacity: 1;
+}
+
+/* ===== Stats Line ===== */
+.stats-line {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 14px;
+    color: #666;
+}
+
+.stats-line strong {
+    color: #000;
+    font-weight: 600;
+}
+
+.stats-line .dot {
+    margin: 0 12px;
+    color: #ccc;
+}
+
+/* ===== Chart ===== */
+.chart-section {
+    height: 180px;
+    margin-bottom: 80px;
+}
+
+/* ===== History ===== */
+.history-section {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.add-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+}
+
+.input-date,
+.input-count {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: #000;
+    transition: border-color 0.2s;
+}
+
+.input-date:focus,
+.input-count:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.input-count {
+    max-width: 80px;
+}
+
+.btn-add {
+    padding: 12px 24px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-add:hover {
+    opacity: 0.7;
+}
+
+.btn-add:active {
+    transform: scale(0.98);
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table td {
+    padding: 16px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.history-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.history-table tr:hover {
+    background: #fafafa;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+    .container {
+        padding: 40px 20px;
+    }
+
+    .progress-counter {
+        font-size: 48px;
+    }
+
+    .add-form {
+        flex-wrap: wrap;
+    }
+
+    .input-date {
+        flex: 1 1 100%;
+    }
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pushups</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Progress Counter -->
+        <header class="header">
+            <div class="progress-counter">
+                <span class="current" id="totalPushups">0</span>
+                <span class="divider">/</span>
+                <span class="goal" id="goalCount">10000</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </header>
+
+        <!-- Heatmap -->
+        <section class="heatmap-section">
+            <div class="heatmap-days">
+                <span></span><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span>
+            </div>
+            <div class="heatmap-scroll" id="heatmapScroll">
+                <div class="heatmap-months" id="heatmapMonths"></div>
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+            </div>
+        </section>
+
+        <!-- Stats Line -->
+        <div class="stats-line">
+            <span><strong id="avgPushups">0</strong> avg</span>
+            <span class="dot">·</span>
+            <span><strong id="maxPushups">0</strong> best</span>
+            <span class="dot">·</span>
+            <span><strong id="streakDays">0</strong> days</span>
+        </div>
+
+        <!-- Chart -->
+        <section class="chart-section">
+            <canvas id="statsChart"></canvas>
+        </section>
+
+        <!-- History -->
+        <section class="history-section">
+            <div class="add-form">
+                <input type="date" id="entryDate" class="input-date">
+                <input type="number" id="entryCount" class="input-count" placeholder="100">
+                <button id="addEntryBtn" class="btn-add">Add</button>
+            </div>
+            <table class="history-table">
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
