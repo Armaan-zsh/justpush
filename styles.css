@@ -290,3 +290,45 @@ body {
         flex: 1 1 100%;
     }
 }
+
+/* ===== About ===== */
+.about-section {
+    margin-top: 100px;
+    text-align: center;
+}
+
+.about-divider {
+    width: 40px;
+    height: 1px;
+    background: #ddd;
+    margin: 0 auto 40px;
+}
+
+.about-text {
+    max-width: 480px;
+    margin: 0 auto 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #666;
+}
+
+.about-links {
+    font-size: 13px;
+    color: #999;
+}
+
+.about-links a {
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.about-links a:hover {
+    opacity: 0.5;
+}
+
+.about-links span {
+    margin: 0 10px;
+    color: #ccc;
+}
