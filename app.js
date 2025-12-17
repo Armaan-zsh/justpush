@@ -1,39 +1,129 @@
-// ===== Pushup Tracker - Minimal =====
+// ===== Pushup Tracker - Supabase Version =====
 
-const STORAGE_KEY = 'pushupTrackerData';
+const SUPABASE_URL = 'https://glamztevtjslfxhdwjuc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsYW16dGV2dGpzbGZ4aGR3anVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODYwOTMsImV4cCI6MjA4MTU2MjA5M30.WYHzFGDMiqYFOMVEiHboQ0z6xzes5tzExV4lyt8jIVM';
 
-function getData() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+// ===== Data from Supabase =====
+async function getData() {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pushups?select=*`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        const rows = await response.json();
+        // Convert array to object { date: count }
+        const data = {};
+        rows.forEach(row => {
+            data[row.date] = row.count;
+        });
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch data:', error);
+        return {};
+    }
 }
 
-function saveData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+// ===== Admin Auth =====
+function isAdmin() {
+    return sessionStorage.getItem('isAdmin') === 'true';
+}
+
+function checkAdmin() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (isAdmin()) {
+        document.getElementById('addForm').style.display = 'flex';
+        return;
+    }
+
+    if (params.get('admin') === 'true') {
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+}
+
+async function handleLogin() {
+    const password = document.getElementById('adminPassword').value;
+
+    // Test password by making a dummy request
+    try {
+        const response = await fetch('/api/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                date: '1970-01-01',
+                count: 0,
+                password
+            })
+        });
+
+        if (response.ok) {
+            sessionStorage.setItem('isAdmin', 'true');
+            sessionStorage.setItem('adminPassword', password);
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('addForm').style.display = 'flex';
+        } else {
+            alert('Wrong password!');
+        }
+    } catch (error) {
+        alert('Login failed: ' + error.message);
+    }
 }
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('addEntryBtn').addEventListener('click', addEntry);
-    document.getElementById('entryCount').addEventListener('keypress', e => {
+    checkAdmin();
+
+    const addBtn = document.getElementById('addEntryBtn');
+    const dateInput = document.getElementById('entryDate');
+    const countInput = document.getElementById('entryCount');
+
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    if (addBtn) addBtn.addEventListener('click', addEntry);
+    if (countInput) countInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') addEntry();
     });
+
+    const loginBtn = document.getElementById('loginBtn');
+    const passInput = document.getElementById('adminPassword');
+    if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+    if (passInput) passInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') handleLogin();
+    });
+
     render();
 });
 
-function addEntry() {
+async function addEntry() {
     const date = document.getElementById('entryDate').value;
     const count = parseInt(document.getElementById('entryCount').value);
+    const password = sessionStorage.getItem('adminPassword');
+
     if (!date || isNaN(count) || count < 0) return;
 
-    const data = getData();
-    data[date] = count;
-    saveData(data);
-    document.getElementById('entryCount').value = '';
-    render();
+    try {
+        const response = await fetch('/api/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date, count, password })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert('Failed to add: ' + error.error);
+            return;
+        }
+
+        document.getElementById('entryCount').value = '';
+        render();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
 }
 
-function render() {
-    const data = getData();
+async function render() {
+    const data = await getData();
 
     // Progress
     const total = Object.values(data).reduce((a, b) => a + b, 0);
@@ -60,7 +150,6 @@ function render() {
     document.getElementById('maxPushups').textContent = nonZero.length ? Math.max(...nonZero) : 0;
     document.getElementById('streakDays').textContent = calcStreak(data);
 
-    // Chart
     renderChart(dates, values);
 
     // History
