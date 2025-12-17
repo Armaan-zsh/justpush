@@ -1,23 +1,28 @@
-// ===== Pushup Tracker - Supabase Version =====
+// ===== Pushup Tracker - Secure Supabase Version =====
 
 const SUPABASE_URL = 'https://glamztevtjslfxhdwjuc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsYW16dGV2dGpzbGZ4aGR3anVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODYwOTMsImV4cCI6MjA4MTU2MjA5M30.WYHzFGDMiqYFOMVEiHboQ0z6xzes5tzExV4lyt8jIVM';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsYW16dGV2dGpzbGZ4aGR3anVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODYwOTMsImV4cCI6MjA4MTU2MjA5M30.WYHzFGDMiqYFOMVEiHboQ0z6xzes5tzExV4lyt8jIVM';
+
+// Admin token - you'll add this as a secret in the URL
+// Visit: justpush.vercel.app?token=YOUR_SECRET_TOKEN
+let adminToken = null;
 
 // ===== Data from Supabase =====
 async function getData() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/pushups?select=*`, {
             headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
             }
         });
         const rows = await response.json();
-        // Convert array to object { date: count }
         const data = {};
-        rows.forEach(row => {
-            data[row.date] = row.count;
-        });
+        if (Array.isArray(rows)) {
+            rows.forEach(row => {
+                data[row.date] = row.count;
+            });
+        }
         return data;
     } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -27,47 +32,28 @@ async function getData() {
 
 // ===== Admin Auth =====
 function isAdmin() {
-    return sessionStorage.getItem('isAdmin') === 'true';
+    return sessionStorage.getItem('adminToken') !== null;
 }
 
 function checkAdmin() {
     const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-    if (isAdmin()) {
+    // If token in URL, save it and show add form
+    if (token) {
+        sessionStorage.setItem('adminToken', token);
+        adminToken = token;
         document.getElementById('addForm').style.display = 'flex';
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
         return;
     }
 
-    if (params.get('admin') === 'true') {
-        document.getElementById('loginModal').style.display = 'flex';
-    }
-}
-
-async function handleLogin() {
-    const password = document.getElementById('adminPassword').value;
-
-    // Test password by making a dummy request
-    try {
-        const response = await fetch('/api/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                date: '1970-01-01',
-                count: 0,
-                password
-            })
-        });
-
-        if (response.ok) {
-            sessionStorage.setItem('isAdmin', 'true');
-            sessionStorage.setItem('adminPassword', password);
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('addForm').style.display = 'flex';
-        } else {
-            alert('Wrong password!');
-        }
-    } catch (error) {
-        alert('Login failed: ' + error.message);
+    // Check if already logged in
+    const savedToken = sessionStorage.getItem('adminToken');
+    if (savedToken) {
+        adminToken = savedToken;
+        document.getElementById('addForm').style.display = 'flex';
     }
 }
 
@@ -85,33 +71,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') addEntry();
     });
 
-    const loginBtn = document.getElementById('loginBtn');
-    const passInput = document.getElementById('adminPassword');
-    if (loginBtn) loginBtn.addEventListener('click', handleLogin);
-    if (passInput) passInput.addEventListener('keypress', e => {
-        if (e.key === 'Enter') handleLogin();
-    });
-
     render();
 });
 
 async function addEntry() {
     const date = document.getElementById('entryDate').value;
     const count = parseInt(document.getElementById('entryCount').value);
-    const password = sessionStorage.getItem('adminPassword');
+    const token = sessionStorage.getItem('adminToken');
 
     if (!date || isNaN(count) || count < 0) return;
+    if (!token) {
+        alert('Not logged in as admin');
+        return;
+    }
 
     try {
-        const response = await fetch('/api/add', {
+        // Use the token as the service key for writes
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pushups`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date, count, password })
+            headers: {
+                'apikey': token,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify({ date, count })
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            alert('Failed to add: ' + error.error);
+            const error = await response.text();
+            alert('Failed to add: ' + error);
             return;
         }
 
