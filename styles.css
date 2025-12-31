@@ -35,7 +35,7 @@ body {
     background: #f1f1f1;
     padding: 3px;
     border-radius: 9px;
-    margin-bottom: 40px;
+    margin-bottom: 80px;
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
@@ -57,7 +57,27 @@ body {
 .toggle-btn.active {
     background: #fff;
     color: #000;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.show-more-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn-show-more {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.2s;
+}
+
+.btn-show-more:hover {
+    color: #000;
 }
 
 /* ===== Header ===== */

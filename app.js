@@ -12,6 +12,9 @@ async function getData(mode) {
     }
 }
 
+// Global state
+let historyExpanded = false;
+
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
     // Setup Toggle
@@ -21,6 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
             switchMode(mode);
         });
     });
+
+    // Setup Show More
+    const showMoreBtn = document.getElementById('showMoreBtn');
+    if (showMoreBtn) {
+        showMoreBtn.addEventListener('click', () => {
+            historyExpanded = !historyExpanded;
+            render();
+        });
+    }
 
     render();
 });
@@ -73,13 +85,30 @@ async function render() {
     renderChart(dates, values);
 
     // History
+    // History
     const tbody = document.getElementById('historyTableBody');
     const sorted = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
-    tbody.innerHTML = sorted.map(date => {
+
+    // Limits
+    const limit = historyExpanded ? sorted.length : 7;
+    const historySlice = sorted.slice(0, limit);
+
+    tbody.innerHTML = historySlice.map(date => {
         const d = new Date(date + 'T00:00:00');
         const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         return `<tr><td>${formatted}</td><td>${data[date]}</td></tr>`;
     }).join('');
+
+    // Show More Button Logic
+    const showMoreBtn = document.getElementById('showMoreBtn');
+    if (showMoreBtn) {
+        if (sorted.length <= 7) {
+            showMoreBtn.style.display = 'none';
+        } else {
+            showMoreBtn.style.display = 'inline-block';
+            showMoreBtn.textContent = historyExpanded ? 'Show Less' : 'Show History';
+        }
+    }
 }
 
 function calcStreak(data) {
