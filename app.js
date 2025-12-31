@@ -1,27 +1,53 @@
 // ===== Pushup Tracker - Simple JSON Version =====
 
-// Load data from data.json
-async function getData() {
+let currentMode = 'pushups';
+// Load data from json file based on mode
+async function getData(mode) {
     try {
-        const response = await fetch('./data.json');
+        const response = await fetch(`./${mode}.json`);
         return await response.json();
     } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error(`Failed to load ${mode} data:`, error);
         return {};
     }
 }
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup Toggle
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.target.dataset.mode;
+            switchMode(mode);
+        });
+    });
+
     render();
 });
 
+async function switchMode(mode) {
+    if (currentMode === mode) return;
+    currentMode = mode;
+
+    // Update Toggle UI
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    // Update Title? Optional, sticking to minimal change
+    // document.title = mode === 'pushups' ? 'Pushups' : 'Squats';
+
+    render();
+}
+
 async function render() {
-    const data = await getData();
+    const data = await getData(currentMode);
 
     // Progress
     const total = Object.values(data).reduce((a, b) => a + b, 0);
-    const goal = 10000;
+    const goal = 10000; // Both have 10k goal
+
+    // Update goal text color/label if needed, but keeping it simple
     document.getElementById('totalPushups').textContent = total.toLocaleString();
     document.getElementById('goalCount').textContent = goal.toLocaleString();
     document.getElementById('progressBar').style.width = `${Math.min((total / goal) * 100, 100)}%`;
@@ -81,7 +107,10 @@ function renderHeatmap(data) {
     start.setDate(start.getDate() - 364);
     start.setDate(start.getDate() - start.getDay());
 
-    const maxVal = Math.max(...Object.values(data), 1);
+    const maxVal = Math.max(...Object.values(data), 1); // Dynamic scaling
+    // Fallback if no data
+    const scaleMax = maxVal > 0 ? maxVal : 1;
+
     const monthLabels = [];
     let currentMonth = -1;
     let weekIdx = 0;
@@ -101,7 +130,7 @@ function renderHeatmap(data) {
             el.className = 'heatmap-day';
             const key = current.toISOString().split('T')[0];
             const count = data[key] || 0;
-            const level = count === 0 ? 0 : count <= maxVal * 0.25 ? 1 : count <= maxVal * 0.5 ? 2 : count <= maxVal * 0.75 ? 3 : 4;
+            const level = count === 0 ? 0 : count <= scaleMax * 0.25 ? 1 : count <= scaleMax * 0.5 ? 2 : count <= scaleMax * 0.75 ? 3 : 4;
             if (level) el.classList.add(`level-${level}`);
             el.dataset.date = key;
             el.dataset.count = count;
@@ -123,7 +152,10 @@ function renderHeatmap(data) {
         months.appendChild(span);
     });
 
-    document.getElementById('heatmapScroll').scrollLeft = 9999;
+    // Auto scroll to end
+    setTimeout(() => {
+        document.getElementById('heatmapScroll').scrollLeft = 9999;
+    }, 0);
 }
 
 function showTip(e) {
