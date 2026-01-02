@@ -168,9 +168,9 @@ function renderHeatmap(data) {
     const start = new Date(yearStart);
     start.setDate(start.getDate() - start.getDay());
 
-    // Adjust end to current date if it's this year
+    // Always show full year grid
     const today = new Date();
-    const end = selectedYear === currentYear ? today : yearEnd;
+    const end = yearEnd;
 
     const maxVal = Math.max(...Object.values(data), 1);
     const scaleMax = maxVal > 0 ? maxVal : 1;
@@ -184,7 +184,7 @@ function renderHeatmap(data) {
         const week = document.createElement('div');
         week.className = 'heatmap-week';
 
-        if (current.getMonth() !== currentMonth) {
+        if (current.getMonth() !== currentMonth && current.getFullYear() === selectedYear) {
             monthLabels.push({ month: current.getMonth(), week: weekIdx });
             currentMonth = current.getMonth();
         }
@@ -195,13 +195,21 @@ function renderHeatmap(data) {
             const key = current.toISOString().split('T')[0];
             const count = data[key] || 0;
 
-            // Only show data for the selected year
+            // Only hide days outside the selected year (grid alignment days)
             const isInYear = current.getFullYear() === selectedYear;
             const isFuture = current > today;
 
-            if (!isInYear || isFuture) {
+            if (!isInYear) {
+                // Days from previous year used for grid alignment
                 el.style.visibility = 'hidden';
+            } else if (isFuture) {
+                // Future days in current year - show as empty gray cells
+                el.dataset.date = key;
+                el.dataset.count = 0;
+                el.addEventListener('mouseenter', showTip);
+                el.addEventListener('mouseleave', hideTip);
             } else {
+                // Past/present days with potential data
                 const level = count === 0 ? 0 : count <= scaleMax * 0.25 ? 1 : count <= scaleMax * 0.5 ? 2 : count <= scaleMax * 0.75 ? 3 : 4;
                 if (level) el.classList.add(`level-${level}`);
                 el.dataset.date = key;
