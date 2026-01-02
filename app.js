@@ -192,11 +192,16 @@ function renderHeatmap(data) {
         for (let d = 0; d < 7; d++) {
             const el = document.createElement('div');
             el.className = 'heatmap-day';
-            const key = current.toISOString().split('T')[0];
+
+            // Use local date format to avoid timezone issues
+            const year = current.getFullYear();
+            const month = String(current.getMonth() + 1).padStart(2, '0');
+            const day = String(current.getDate()).padStart(2, '0');
+            const key = `${year}-${month}-${day}`;
             const count = data[key] || 0;
 
             // Only hide days outside the selected year (grid alignment days)
-            const isInYear = current.getFullYear() === selectedYear;
+            const isInYear = year === selectedYear;
             const isFuture = current > today;
 
             if (!isInYear) {
