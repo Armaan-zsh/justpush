@@ -132,6 +132,38 @@ body {
     margin-bottom: 60px;
 }
 
+/* Year Selector */
+.year-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 16px;
+    padding-top: 20px;
+}
+
+.year-btn {
+    border: none;
+    background: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #999;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    text-align: right;
+}
+
+.year-btn:hover {
+    color: #666;
+}
+
+.year-btn.active {
+    background: #000;
+    color: #fff;
+}
+
 .heatmap-days {
     display: flex;
     flex-direction: column;

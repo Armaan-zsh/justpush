@@ -14,6 +14,7 @@ async function getData(mode) {
 
 // Global state
 let historyExpanded = false;
+let selectedYear = new Date().getFullYear(); // Default to current year
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -128,16 +129,50 @@ function calcStreak(data) {
 function renderHeatmap(data) {
     const grid = document.getElementById('heatmapGrid');
     const months = document.getElementById('heatmapMonths');
+    const yearSelector = document.getElementById('yearSelector');
     grid.innerHTML = '';
     months.innerHTML = '';
 
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(start.getDate() - 364);
+    // Get available years from data
+    const years = [...new Set(Object.keys(data).map(d => parseInt(d.split('-')[0])))].sort((a, b) => b - a);
+
+    // Add current year if not in data
+    const currentYear = new Date().getFullYear();
+    if (!years.includes(currentYear)) {
+        years.unshift(currentYear);
+    }
+
+    // Ensure selectedYear is valid
+    if (!years.includes(selectedYear)) {
+        selectedYear = years[0];
+    }
+
+    // Render year selector
+    yearSelector.innerHTML = years.map(year =>
+        `<button class="year-btn ${year === selectedYear ? 'active' : ''}" data-year="${year}">${year}</button>`
+    ).join('');
+
+    // Add click handlers for year buttons
+    yearSelector.querySelectorAll('.year-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedYear = parseInt(btn.dataset.year);
+            render(); // Re-render everything
+        });
+    });
+
+    // Calculate date range for selected year
+    const yearEnd = new Date(selectedYear, 11, 31);
+    const yearStart = new Date(selectedYear, 0, 1);
+
+    // Adjust start to previous Sunday for grid alignment
+    const start = new Date(yearStart);
     start.setDate(start.getDate() - start.getDay());
 
-    const maxVal = Math.max(...Object.values(data), 1); // Dynamic scaling
-    // Fallback if no data
+    // Adjust end to current date if it's this year
+    const today = new Date();
+    const end = selectedYear === currentYear ? today : yearEnd;
+
+    const maxVal = Math.max(...Object.values(data), 1);
     const scaleMax = maxVal > 0 ? maxVal : 1;
 
     const monthLabels = [];
@@ -145,7 +180,7 @@ function renderHeatmap(data) {
     let weekIdx = 0;
     const current = new Date(start);
 
-    while (current <= today) {
+    while (current <= end) {
         const week = document.createElement('div');
         week.className = 'heatmap-week';
 
@@ -159,12 +194,22 @@ function renderHeatmap(data) {
             el.className = 'heatmap-day';
             const key = current.toISOString().split('T')[0];
             const count = data[key] || 0;
-            const level = count === 0 ? 0 : count <= scaleMax * 0.25 ? 1 : count <= scaleMax * 0.5 ? 2 : count <= scaleMax * 0.75 ? 3 : 4;
-            if (level) el.classList.add(`level-${level}`);
-            el.dataset.date = key;
-            el.dataset.count = count;
-            el.addEventListener('mouseenter', showTip);
-            el.addEventListener('mouseleave', hideTip);
+
+            // Only show data for the selected year
+            const isInYear = current.getFullYear() === selectedYear;
+            const isFuture = current > today;
+
+            if (!isInYear || isFuture) {
+                el.style.visibility = 'hidden';
+            } else {
+                const level = count === 0 ? 0 : count <= scaleMax * 0.25 ? 1 : count <= scaleMax * 0.5 ? 2 : count <= scaleMax * 0.75 ? 3 : 4;
+                if (level) el.classList.add(`level-${level}`);
+                el.dataset.date = key;
+                el.dataset.count = count;
+                el.addEventListener('mouseenter', showTip);
+                el.addEventListener('mouseleave', hideTip);
+            }
+
             week.appendChild(el);
             current.setDate(current.getDate() + 1);
         }
@@ -181,10 +226,14 @@ function renderHeatmap(data) {
         months.appendChild(span);
     });
 
-    // Auto scroll to end
-    setTimeout(() => {
-        document.getElementById('heatmapScroll').scrollLeft = 9999;
-    }, 0);
+    // Auto scroll to end for current year
+    if (selectedYear === currentYear) {
+        setTimeout(() => {
+            document.getElementById('heatmapScroll').scrollLeft = 9999;
+        }, 0);
+    } else {
+        document.getElementById('heatmapScroll').scrollLeft = 0;
+    }
 }
 
 function showTip(e) {
