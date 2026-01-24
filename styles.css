@@ -276,10 +276,7 @@ body {
 /* ===== Chart ===== */
 .chart-section {
     height: 200px;
-    margin-bottom: 80px;
-    background: #232528;
-    border-radius: 12px;
-    padding: 24px;
+    margin-bottom: 40px;
 }
 
 /* ===== Responsive ===== */
