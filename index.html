@@ -54,25 +54,34 @@
             <canvas id="statsChart"></canvas>
         </section>
 
-        <!-- History -->
-        <section class="history-section">
+        <!-- About -->
+        <section class="about-section">
+            <p class="about-text">
+                <strong><em>JustPush</em></strong>
+            </p>
+            <div class="about-links">
+                <span>·</span>
+            </div>
+        </section>
+    </div>
+
+    <!-- Floating History Panel -->
+    <div class="history-panel" id="historyPanel">
+        <div class="history-panel-header">
+            <h3>History</h3>
+            <button class="history-close-btn" id="historyCloseBtn">×</button>
+        </div>
+        <div class="history-panel-content">
             <table class="history-table">
                 <tbody id="historyTableBody"></tbody>
             </table>
-            <div class="show-more-container">
-                <button id="showMoreBtn" class="btn-show-more">Show History</button>
-            </div>
+        </div>
+    </div>
 
-            <!-- About -->
-            <section class="about-section">
-                <p class="about-text">
-                    <strong><em>JustPush</em></strong>
-                </p>
-                <div class="about-links">
-                    <span>·</span>
-                </div>
-            </section>
-        </section>
+    <!-- History Toggle Button -->
+    <button class="history-toggle-btn" id="historyToggleBtn">
+        <span class="history-icon">📋</span>
+    </button>
     </div>
 
     <div class="tooltip" id="tooltip"></div>

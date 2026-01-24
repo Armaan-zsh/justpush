@@ -68,22 +68,27 @@ async function render() {
     // Heatmap
     renderHeatmap(data);
 
-    // Stats (last 30 days)
-    const dates = [];
+    // Stats (all time for chart, last 30 days for averages)
+    const allDates = Object.keys(data).sort((a, b) => new Date(a) - new Date(b));
+    const allValues = allDates.map(d => data[d] || 0);
+
+    // For stats display, use last 30 days
     const today = new Date();
+    const last30Dates = [];
     for (let i = 29; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
+        last30Dates.push(d.toISOString().split('T')[0]);
     }
-    const values = dates.map(d => data[d] || 0);
-    const nonZero = values.filter(v => v > 0);
+    const last30Values = last30Dates.map(d => data[d] || 0);
+    const nonZero = last30Values.filter(v => v > 0);
 
     document.getElementById('avgPushups').textContent = nonZero.length ? Math.round(nonZero.reduce((a, b) => a + b, 0) / nonZero.length) : 0;
     document.getElementById('maxPushups').textContent = nonZero.length ? Math.max(...nonZero) : 0;
     document.getElementById('streakDays').textContent = calcStreak(data);
 
-    renderChart(dates, values);
+    // Chart uses ALL data
+    renderChart(allDates, allValues);
 
     // History
     // History
@@ -264,46 +269,96 @@ function hideTip() {
 
 // ===== Chart =====
 let chart = null;
+
+// Calculate moving average for trend line
+function movingAverage(data, windowSize = 5) {
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+        let sum = 0;
+        let count = 0;
+        for (let j = Math.max(0, i - windowSize + 1); j <= i; j++) {
+            if (data[j] > 0) {
+                sum += data[j];
+                count++;
+            }
+        }
+        result.push(count > 0 ? sum / count : null);
+    }
+    return result;
+}
+
 function renderChart(dates, values) {
     const ctx = document.getElementById('statsChart').getContext('2d');
     if (chart) chart.destroy();
 
+    const labels = dates.map(d => {
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const trendData = movingAverage(values, 5);
+
     chart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: dates.map(d => {
-                const dt = new Date(d + 'T00:00:00');
-                return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }),
-            datasets: [{
-                data: values,
-                backgroundColor: values.map(v => v > 0 ? '#000' : '#eee'),
-                borderRadius: 3,
-            }]
+            labels: labels,
+            datasets: [
+                // Smooth trend line
+                {
+                    data: trendData,
+                    borderColor: '#00d4aa',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#00d4aa',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#000',
-                    titleFont: { weight: '600' },
-                    padding: 10,
-                    cornerRadius: 4,
-                    displayColors: false
+                    backgroundColor: '#2c2e31',
+                    titleColor: '#d1d0c5',
+                    bodyColor: '#00d4aa',
+                    titleFont: { weight: '600', size: 12 },
+                    bodyFont: { weight: '600', size: 14 },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false,
+                    filter: (item) => item.datasetIndex === 0,
+                    callbacks: {
+                        label: (item) => `${values[item.dataIndex]} pushups`
+                    }
                 }
             },
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#999', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 },
+                    ticks: {
+                        color: '#646669',
+                        font: { size: 11 },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 6
+                    },
                     border: { display: false }
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#f0f0f0' },
-                    ticks: { color: '#999', font: { size: 10 } },
+                    grid: { display: false },
+                    ticks: { color: '#646669', font: { size: 11 } },
                     border: { display: false }
                 }
             }
