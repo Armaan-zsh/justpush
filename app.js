@@ -275,11 +275,11 @@ function renderChart(dates, values) {
                     borderWidth: 2.5,
                     fill: false,
                     tension: 0.3,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#00d4aa',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#00d4aa',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
                 }
             ]
         },
