@@ -48,12 +48,20 @@ async function render() {
 
     // Progress
     const total = Object.values(data).reduce((a, b) => a + b, 0);
-    const goal = 10000; // Both have 10k goal
+    const goal = 10000;
 
-    // Update goal text color/label if needed, but keeping it simple
     document.getElementById('totalPushups').textContent = total.toLocaleString();
-    document.getElementById('goalCount').textContent = goal.toLocaleString();
-    document.getElementById('progressBar').style.width = `${Math.min((total / goal) * 100, 100)}%`;
+
+    // Hide goal/progress for swimming
+    const isSwim = currentMode === 'swim';
+    document.getElementById('goalDivider').style.display = isSwim ? 'none' : 'inline';
+    document.getElementById('goalCount').style.display = isSwim ? 'none' : 'inline';
+    document.querySelector('.progress-bar').style.display = isSwim ? 'none' : 'block';
+
+    if (!isSwim) {
+        document.getElementById('goalCount').textContent = goal.toLocaleString();
+        document.getElementById('progressBar').style.width = `${Math.min((total / goal) * 100, 100)}%`;
+    }
 
     // Heatmap
     renderHeatmap(data);
@@ -303,7 +311,14 @@ function renderChart(dates, values) {
                     displayColors: false,
                     filter: (item) => item.datasetIndex === 0,
                     callbacks: {
-                        label: (item) => `${values[item.dataIndex]} pushups`
+                        label: (item) => {
+                            const units = {
+                                'pushups': 'pushups',
+                                'squats': 'squats',
+                                'swim': 'meters'
+                            };
+                            return `${values[item.dataIndex]} ${units[currentMode] || ''}`;
+                        }
                     }
                 }
             },
