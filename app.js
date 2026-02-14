@@ -52,6 +52,16 @@ async function render() {
 
     document.getElementById('totalPushups').textContent = total.toLocaleString();
 
+    // Update unit label (e.g., 'm' for swimming)
+    const unitLabel = document.getElementById('unitLabel');
+    if (currentMode === 'swim') {
+        unitLabel.textContent = 'm';
+        unitLabel.style.display = 'inline';
+    } else {
+        unitLabel.textContent = '';
+        unitLabel.style.display = 'none';
+    }
+
     // Hide goal/progress for swimming
     const isSwim = currentMode === 'swim';
     document.getElementById('goalDivider').style.display = isSwim ? 'none' : 'inline';

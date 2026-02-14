@@ -98,6 +98,14 @@ body {
     color: #000;
 }
 
+.unit-label {
+    font-size: 32px;
+    color: #999;
+    margin-left: 8px;
+    font-weight: 500;
+    vertical-align: baseline;
+}
+
 .divider {
     color: #ccc;
     font-weight: 300;
