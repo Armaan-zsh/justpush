@@ -325,7 +325,8 @@ function renderChart(dates, values) {
                             const units = {
                                 'pushups': 'pushups',
                                 'squats': 'squats',
-                                'swim': 'meters'
+                                'swim': 'meters',
+                                'pullups': 'pullups'
                             };
                             return `${values[item.dataIndex]} ${units[currentMode] || ''}`;
                         }
